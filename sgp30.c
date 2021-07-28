@@ -2,6 +2,7 @@
 * This library is based on an Arduino library written for the SPG30
 * Arduino Library written by Ciara Jekel @ SparkFun Electronics, June 18th, 2018
 * Modified for Simplicity Studio by CGerrish (Gerrikoio) @ June 2021
+* Modified @ 27 July 2021 - fixed error in setHumidity function
 
 * https://github.com/sparkfun/SparkFun_SGP30_Arduino_Library
 
@@ -187,8 +188,7 @@ SGP30ERR measureAirQuality(uint16_t* CO2, uint16_t* TVOC)
 
   //Hang out while measurement is taken. datasheet says 10-12ms
 
-  sl_sleeptimer_delay_millisecond(12);
-  printf(" ...reading\r\n");
+  sl_sleeptimer_delay_millisecond(11);
   //Comes back in 6 bytes, CO2 data(MSB) / data(LSB) / Checksum / TVOC data(MSB) / data(LSB) / Checksum
   uint8_t rx_buff[6];
 
@@ -253,8 +253,8 @@ SGP30ERR getBaseline(uint16_t* baselineCO2, uint16_t* baselineTVOC)
 
   if(ret != i2cTransferDone) return SGP30_ERR_I2C_TIMEOUT;
 
-  //Hang out while measurement is taken. datasheet says 10ms
-  sl_sleeptimer_delay_millisecond(10);
+  //Hang out while measurement is taken. datasheet says 10ms (11ms to be sure)
+  sl_sleeptimer_delay_millisecond(11);
 
   uint8_t rx_buff[6];
 
@@ -341,14 +341,14 @@ SGP30ERR setHumidity(uint16_t humidity)
 
   uint8_t TXbuff[3];
 
-  TXbuff[0] = humidity >> 8;    //write baseline humidity MSB
-  TXbuff[1] = humidity;         //write baseline humidity MSB
+  TXbuff[0] = humidity >> 8;    //write humidity MSB
+  TXbuff[1] = humidity;         //write humidity LSB
   TXbuff[2] = _CRC8(humidity);  //write checksum humidity
 
   // Initialising I2C transferSGP30_I2C_ADDRESS
   seq.addr          = (uint16_t)(SGP30Address);
   seq.flags         = I2C_FLAG_WRITE_WRITE;
-  seq.buf[0].data   = (uint8_t*)set_baseline;
+  seq.buf[0].data   = (uint8_t*)set_humidity;
   seq.buf[0].len    = 2;
   seq.buf[1].data   = TXbuff;
   seq.buf[1].len    = 3;
