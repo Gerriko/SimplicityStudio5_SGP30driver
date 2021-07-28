@@ -48,6 +48,7 @@
 #include "sl_i2cspm.h"
 #include "sl_i2cspm_instances.h"
 #include "sl_sleeptimer.h"
+#include "sl_udelay.h"
 
 typedef enum
 {
